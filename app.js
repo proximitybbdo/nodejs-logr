@@ -9,7 +9,8 @@ var port = 8125;
 
 // Init
 function run() {
-	setup_db();
+	//setup_db('127.0.0.1', 27017, 'logr');
+	setup_db('prox_logr:prox_logr@flame.mongohq.com', 27096, 'logr');
 
 	server.listen(port); 
 
@@ -19,10 +20,14 @@ function run() {
 // Database
 var LogrMessageModel;
 
-function setup_db(host, db_name) {
+function setup_db(host, port, db_name) {
 	console.log('# Database Setup');
 	
-	mongoose.connect('mongodb://' + host + '/' + db_name);
+	var conn = 'mongodb://' + host + ':' + port + '/' + db_name;
+	
+	mongoose.connect(conn);
+	
+	console.log('# Connected to \'' + conn + '\'');
 
 	var Schema = mongoose.Schema
 		,	ObjectId = Schema.ObjectId;
@@ -69,7 +74,8 @@ server = net.createServer(function (socket) {
 		msg.meta 	= obj.meta;
 		
 		msg.save(function(err){
-			console.dir(err);
+			if(err)
+				console.dir(err);
 		});
 		
 		socket.write(msg.date + ': ' + msg.id + ' :' + msg.message + '\0');
