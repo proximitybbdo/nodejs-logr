@@ -36,14 +36,14 @@ function setup_db(host, port, db_name) {
 
 	var Schema = mongoose.Schema, ObjectId = Schema.ObjectId;
 
-	var LogrMessage = new Schema({	id 			: ObjectId, 
-																	msg 		: String, 
-																	type		: String, 
-																	meta		: String, 
-																	project	: String, 
-																	uid			: String, 
-																	date 		: {type: Date, default: Date.now}
-																});
+	var LogrMessage = new Schema({
+		id: ObjectId, msg: String, 
+		type: String, 
+		meta: String, 
+		project: String, 
+		uid: String, 
+		date: {type: Date, default: Date.now}
+	});
 
 	mongoose.model('LogrMessage', LogrMessage);
 
@@ -54,11 +54,11 @@ function save_log(data, call_back) {
 	var obj = JSON.parse(data);
 	var log = new LogrMessageModel();
 
-	log.msg			= obj.msg;
-	log.type		= obj.type;
-	log.meta		= obj.meta;
-	log.project	= obj.project;
-	log.uid			= obj.uid;
+	log.msg = obj.msg;
+	log.type = obj.type;
+	log.meta = obj.meta;
+	log.project = obj.project;
+	log.uid = obj.uid;
 
 	log.save(call_back);
 }
