@@ -11,12 +11,18 @@ var cmd_limiter = '~%~';
 
 // Init
 function run() {
-	// setup_db('127.0.0.1', 27017, 'logr');
-	setup_db('prox_logr:prox_logr@flame.mongohq.com', 27096, 'logr');
+	if(process.argv.length >= 5) {
+		setup_db(process.argv[2], process.argv[3], process.argv[4]);
 
-	server.listen(port); 
+		server.listen(port); 
 
-	console.log('# Server start @ port ' + port);
+		console.log('# Server start @ port ' + port);
+	} else {
+		console.log('# Arguments mismatch');
+		console.log('## node app.js host port db_name');
+		
+		process.exit(1);
+	}
 }
 
 // Database
