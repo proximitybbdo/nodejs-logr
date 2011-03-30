@@ -1,13 +1,13 @@
-var net = require('net')
-	, sys = require('sys')
-	, mongoose = require('mongoose');
+var net = require('net');
+var mongoose = require('mongoose');
 
-// Variables are global per application start/stop.
 var global = 0;
 var server;
 var port = 8125;
 var msg_limiter = '~|~';
 var cmd_limiter = '~%~';
+
+var LogrMessageModel;
 
 // Init
 function run() {
@@ -25,9 +25,6 @@ function run() {
 	}
 }
 
-// Database
-var LogrMessageModel;
-
 function setup_db(host, port, db_name) {
 	console.log('# Database Setup');
 	
@@ -37,18 +34,16 @@ function setup_db(host, port, db_name) {
 	
 	console.log('# Connected to \'' + conn + '\'');
 
-	var Schema = mongoose.Schema
-		,	ObjectId = Schema.ObjectId;
+	var Schema = mongoose.Schema, ObjectId = Schema.ObjectId;
 
-	var LogrMessage = new Schema({
-			id 			: ObjectId
-		,	msg 		: String
-		, type		: String
-		, meta		: String 
-		, project	: String
-		, uid			: String
-		,	date 		: {type: Date, default: Date.now}
-	});
+	var LogrMessage = new Schema({	id 			: ObjectId, 
+																	msg 		: String, 
+																	type		: String, 
+																	meta		: String, 
+																	project	: String, 
+																	uid			: String, 
+																	date 		: {type: Date, default: Date.now}
+																});
 
 	mongoose.model('LogrMessage', LogrMessage);
 
@@ -59,11 +54,11 @@ function save_log(data, call_back) {
 	var obj = JSON.parse(data);
 	var log = new LogrMessageModel();
 
-	log.msg 		= obj.msg;
-	log.type 		= obj.type;
-	log.meta 		= obj.meta;
+	log.msg			= obj.msg;
+	log.type		= obj.type;
+	log.meta		= obj.meta;
 	log.project	= obj.project;
-	log.uid 		= obj.uid;
+	log.uid			= obj.uid;
 
 	log.save(call_back);
 }
@@ -77,15 +72,12 @@ server = net.createServer(function (socket) {
 	
 	global++;
 	
-	// Variables are connection dependend.
-	// var test = 1;
-	
 	socket.on('connect', function () {
 		socket.write('Proximity BBDO Socket Logr (' + global + ')\0');
 		
 		console.log('# New Client ' + socket.remoteAddress + ':' + socket.remotePort);
 		
-		// sys.puts(sys.inspect(socket, false)); // Debug info
+		// console.log(console.dir(socket, false)); // Debug info
 	});
 	  
 	socket.on('data', function (data) {
@@ -107,6 +99,8 @@ server = net.createServer(function (socket) {
 	});
 	
 	socket.on('end', function () {
+		console.log('# Exit Client ' + socket.remoteAddress + ':' + socket.remotePort);
+		
 		socket.end();
 	});
 });
