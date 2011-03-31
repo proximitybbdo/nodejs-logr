@@ -17,15 +17,15 @@ function run() {
 
 		// Optional Server Port
 		if(process.argv.length > 5) {
-			var port = process.argv.length[5];
-			
+			var port = process.argv[5];
+
 			if(parseInt(port) == port)
 				server_port = parseInt(port);
 		}
 		
 		// Optional Verbose
 		if(process.argv.length > 6)
-			is_verbose = Boolean(process.argv.length[6]);
+			is_verbose = Boolean(process.argv[6]);
 
 		server.listen(server_port); 
 
