@@ -3,23 +3,37 @@ var mongoose = require('mongoose');
 
 var global = 0;
 var server;
-var port = 8125;
+var server_port = 8125;
 var msg_limiter = '~|~';
 var cmd_limiter = '~%~';
+var is_verbose = false;
 
 var LogrMessageModel;
 
 // Init
 function run() {
-	if(process.argv.length >= 5) {
+	if(process.argv.length > 4) {
 		setup_db(process.argv[2], process.argv[3], process.argv[4]);
 
-		server.listen(port); 
+		// Optional Server Port
+		if(process.argv.length > 5) {
+			var port = process.argv.length[5];
+			
+			if(parseInt(port) == port)
+				server_port = parseInt(port);
+		}
+		
+		// Optional Verbose
+		if(process.argv.length > 6)
+			is_verbose = Boolean(process.argv.length[6]);
 
-		console.log('# Server start @ port ' + port);
+		server.listen(server_port); 
+
+		console.log('# Server start @ port ' + server_port);
 	} else {
-		console.log('# Arguments mismatch');
-		console.log('## node app.js host port db_name');
+		console.log('# Arguments mismatch.');
+		console.log('$ node app.js db_host db_port db_name [server_port verbose]');
+		console.log('# \'verbose\' can be 1 or 0.');
 		
 		process.exit(1);
 	}
@@ -34,7 +48,8 @@ function setup_db(host, port, db_name) {
 	
 	console.log('# Connected to \'' + conn + '\'');
 
-	var Schema = mongoose.Schema, ObjectId = Schema.ObjectId;
+	var Schema = mongoose.Schema;
+	var ObjectId = Schema.ObjectId;
 
 	var LogrMessage = new Schema({
 		id: ObjectId, msg: String, 
@@ -68,7 +83,7 @@ server = net.createServer(function (socket) {
 	console.log('################');
 	console.log('# Server Connect');
 	
-	socket.setEncoding("utf8");
+	socket.setEncoding('utf8');
 	
 	global++;
 	
@@ -76,8 +91,6 @@ server = net.createServer(function (socket) {
 		socket.write('Proximity BBDO Socket Logr (' + global + ')\0');
 		
 		console.log('# New Client ' + socket.remoteAddress + ':' + socket.remotePort);
-		
-		// console.log(console.dir(socket, false)); // Debug info
 	});
 	  
 	socket.on('data', function (data) {
@@ -86,12 +99,16 @@ server = net.createServer(function (socket) {
 		while(messages.length > 0) {
 			var msg = messages.shift();
 			
+			if(is_verbose)
+				console.log("# \tLog :: " + msg);
+			
 			if(msg.length > 0) {
 				save_log(msg, function(err) {
 					if(err) {
-						console.log('# Data Error ' + sys.inspect(err, false));
+						console.log('# Data Error ' + console.dir(err, false));
+						console.log('# Info \n ' + console.dir(socket, false));
 
-						socket.write(sys.inspect(err, false) + '\0');
+						socket.write(console.dir(err, false) + '\0');
 					}
 				});
 			}
