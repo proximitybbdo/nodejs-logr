@@ -1,5 +1,6 @@
 var net = require('net');
 var mongoose = require('mongoose');
+var fs = require('fs');
 
 var global = 0;
 var server;
@@ -7,6 +8,7 @@ var server_port = 8125;
 var msg_limiter = '~|~';
 var cmd_limiter = '~%~';
 var is_verbose = false;
+var policy_file = '';
 
 var LogrMessageModel;
 
@@ -26,7 +28,7 @@ function run() {
 		// Optional Verbose
 		if(process.argv.length > 6)
 			is_verbose = Boolean(process.argv[6]);
-
+		
 		server.listen(server_port); 
 
 		console.log('# Server start @ port ' + server_port);
@@ -97,8 +99,21 @@ server = net.createServer(function (socket) {
 	});
 	  
 	socket.on('data', function (data) {
+    if(data == '<policy-file-request/>\0') {
+      if(is_verbose)
+        console.log("# \tLog :: \n" + policy_file);
+
+      socket.write(policy_file + '\0');
+      socket.end();
+      
+      return;
+    }
+		
 		var messages = data.split(msg_limiter);
 		
+    if(is_verbose && messages.length > 0)
+      console.log("# \tLog :: " + messages.length);
+
 		while(messages.length > 0) {
 			var msg = messages.shift();
 			
@@ -125,4 +140,11 @@ server = net.createServer(function (socket) {
 	});
 });
 
-run();
+fs.readFile('./crossdomain.xml', 'utf8', function (err, poli_file) {
+  if (err) 
+    throw err;
+
+  policy_file = poli_file;
+
+  run();
+});
