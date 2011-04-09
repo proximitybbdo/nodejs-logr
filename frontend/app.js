@@ -50,12 +50,16 @@ function init_app() {
   app.register('.haml', require('hamljs'));
   app.set('view engine', 'haml');
 
+  //------------------------------------------------------------------------
   // routes
+  //------------------------------------------------------------------------
+
+  // get unique project types
   app.get('/', function(req, res) {
 
     var projects = new Array();
 
-    LogrMessageModel.find({}, ['project'], {'limit': 100}, function(err, logs) {
+    LogrMessageModel.find({}, ['project'], {'group': 'type'}, function(err, logs) {
       for(var i = 0; i < logs.length; i++){
         var log = logs[i];
 
@@ -65,32 +69,10 @@ function init_app() {
 
       res.render('index', {'title': 'Proximity Logr', 'projects': projects} );
     });
-  
-    /*
-var mongodb = require('mongodb');
-var server = new mongodb.Server(db_host, db_port, {});
-new mongodb.Db(db_dbname, server, {}).open(function (error, client) {
-  if (error) throw error;
-
-  console.log("connected");
-  var collection = new mongodb.Collection(client, 'logrmessages');
-  
-  collection.find(function(err, cursor) {
-    cursor.toArray(function(err, docs) {
-      console.dir(docs);
-
-    });
-
-console.dir(cursor);
-      res.render('index', {'title': 'Proximity Logr', 'projects': projects} );
-  });
-
-});
-*/
-
 
   });
 
+  // get logs for a projects
   app.get('/:project', function(req, res) {
     LogrMessageModel.find({project: req.params.project}, function(err, logs) {
       res.render('project', {'title': 'Proximity Logr', 'logs': logs, 'project': req.params.project} );
