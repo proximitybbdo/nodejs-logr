@@ -1,0 +1,15 @@
+%div
+  %a{href: '/'} back
+  %h2= 'Project: ' + project 
+  %table
+    %tr
+      %th Row 
+      %th Type
+      %th Message
+      %th Date
+    - each log, row in logs
+      %tr
+        %td= row+1
+        %td= log.type
+        %td= log.msg
+        %td= log.date

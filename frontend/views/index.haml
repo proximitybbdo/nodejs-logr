@@ -1,0 +1,6 @@
+%div
+  %h2 Logged projects
+  %ul
+    - each project in projects
+      %li
+        %a{href: project, title: project}= project
