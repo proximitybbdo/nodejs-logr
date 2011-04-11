@@ -1,0 +1,29 @@
+@import url("boilerplate-reset.css");
+
+@import url("boilerplate-utils.css");
+
+html {
+  background-color: #dcdcdc;
+  background-repeat: no-repeat;
+  background-image: -moz-linear-gradient(100% 100% 90deg, #dcdcdc, #ffffff);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#dcdcdc));
+}
+html body {
+  width: 640px;
+  margin: 0 auto;
+  padding: 20px;
+  text-shadow: 1px 1px 1px white;
+  line-height: 1.6;
+}
+header {
+  padding: 10px;
+}
+header h1 {
+  font-family: Monaco, Calibri, Consolas, courier, sans-serif;
+  font-size: 40px;
+}
+header h3 {
+  font-size: 12px;
+  color: #666;
+  display: none;
+}

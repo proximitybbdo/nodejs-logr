@@ -40,12 +40,21 @@ function run() {
 function init_app() {
   app = express.createServer();
 
-  // enable haml view engine
-  app.register('.haml', require('hamljs'));
-  app.set('view engine', 'haml');
+  // configure app
+  app.configure(function() {
+    // enable haml view engine
+    app.register('.haml', require('hamljs'));
+    app.set('view engine', 'haml');
 
-  // use bodyparser for form POST
-  app.use(express.bodyParser());
+    // use bodyparser for form POST
+    app.use(express.bodyParser());
+
+    // static file provider
+     app.use(express.static(__dirname + '/public')); 
+  });
+
+ 
+
 
   //------------------------------------------------------------------------
   // routes
