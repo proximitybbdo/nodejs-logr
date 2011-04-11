@@ -5,12 +5,8 @@ var http = require('http');
 var mongoose = require('mongoose');
 
 // config
-var db_user = "proximity";
-var db_pass = "ddt4ever";
-var db_host = "flame.mongohq.com";
-var db_port = "27029";
-var db_dbname = "logr";
-
+/* oops */
+ 
 // variables
 var port = 8124;
 var msg_limiter = '~|~';
