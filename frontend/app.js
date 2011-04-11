@@ -1,13 +1,10 @@
-// requires & objects
+// requires & objects ------------------------------------------------------
 var express = require('express');
 var util = require('util');
 var http = require('http');
 var mongoose = require('mongoose');
 
-// config
-/* oops */
- 
-// variables
+// variables ---------------------------------------------------------------
 var port = 8124;
 var msg_limiter = '~|~';
 var cmd_limiter = '~%~';
@@ -27,16 +24,17 @@ Array.prototype.contains = function(obj) {
 }
 
 function run() {
+  if(process.argv.length === 7) {
+    setup_db(process.argv[2], process.argv[3], process.argv[4], process.argv[5], process.argv[6]);
 
-  // connect to db
-  setup_db(db_user, db_pass, db_host, db_port, db_dbname);
-  
-  // init app
-  init_app(port);
+    // init app
+    init_app(port);
+  } else {
+    console.log('# Arguments mismatch.');
+    console.log('$ node app.js db_host db_port db_user db_pass db_name');
 
-  // Optional Verbose
-  if(process.argv.length > 6)
-    is_verbose = Boolean(process.argv[6]);
+    process.exit(1);
+  }  
 }
 
 function init_app() {
@@ -83,7 +81,7 @@ function init_app() {
   util.log('################################');
 }
 
-function setup_db(user, pass, host, port, db_name) {
+function setup_db(host, port, user, pass, db_name) {
 	util.log('# database setup');
 	
 	var conn = 'mongodb://' + user + ':' + pass + '@' + host + ':' + port + '/' + db_name;
