@@ -44,6 +44,9 @@ function init_app() {
   app.register('.haml', require('hamljs'));
   app.set('view engine', 'haml');
 
+  // use bodyparser for form POST
+  app.use(express.bodyParser());
+
   //------------------------------------------------------------------------
   // routes
   //------------------------------------------------------------------------
@@ -68,8 +71,40 @@ function init_app() {
 
   // get logs for a projects
   app.get('/:project', function(req, res) {
-    LogrMessageModel.find({project: req.params.project}, function(err, logs) {
-      res.render('project', {'title': 'Proximity Logr', 'logs': logs, 'project': req.params.project} );
+    // first parse the logr types
+    LogrMessageModel.find({project: req.params.project}, ['type'], function(err, logtypes) {
+      // filter out unique values
+      var unique_logtypes = new Array();
+
+      for (var i = 0; i < logtypes.length; i++) {
+        if(!unique_logtypes.contains(logtypes[i].type))
+          unique_logtypes.push(logtypes[i].type);
+      }
+      
+      // now get the actual log rows
+      LogrMessageModel.find({project: req.params.project}, function(err, logs) {
+        res.render('project', {'title': 'Proximity Logr', 'logs': logs, 'project': req.params.project, 'logtypes': unique_logtypes} );
+      });
+    });
+  });
+
+  // post for filter
+  app.post('/:project', function(req, res) {
+    console.dir(req.body);
+  
+    LogrMessageModel.find({project: req.params.project}, ['type'], function(err, logtypes) {
+      // filter out unique values
+      var unique_logtypes = new Array();
+
+      for (var i = 0; i < logtypes.length; i++) {
+        if(!unique_logtypes.contains(logtypes[i].type))
+          unique_logtypes.push(logtypes[i].type);
+      }
+      
+      // now get the actual log rows
+      LogrMessageModel.find({project: req.params.project, type: req.body.logtype}, function(err, logs) {
+        res.render('project', {'title': 'Proximity Logr', 'logs': logs, 'project': req.params.project, 'logtypes': unique_logtypes} );
+      });
     });
   });
 

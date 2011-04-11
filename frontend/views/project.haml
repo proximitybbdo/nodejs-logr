@@ -1,6 +1,12 @@
 %div
   %a{href: '/'} back
   %h2= 'Project: ' + project 
+  %form{method: 'post', 'action': '/' + project}
+    %h3 Filters
+    %select{'name': 'logtype'}
+      - each logtype in logtypes
+        %option{'value': logtype}= logtype
+    %input{'type': 'submit', 'name': 'submit', 'value': 'filter'}
   %table
     %tr
       %th Row 
