@@ -104,7 +104,7 @@ server = net.createServer(function (socket) {
         console.log("# \tLog :: \n" + policy_file);
 
       socket.write(policy_file + '\0');
-      socket.end();
+      socket.flush();
       
       return;
     }
@@ -140,11 +140,11 @@ server = net.createServer(function (socket) {
 	});
 });
 
-fs.readFile('./crossdomain.xml', 'utf8', function (err, poli_file) {
+fs.readFile('./../crossdomain.xml', function (err, pol_file) {
   if (err) 
     throw err;
 
-  policy_file = poli_file;
+  policy_file = pol_file;
 
   run();
 });
