@@ -1,14 +1,14 @@
-var net = require('net');
+var http = require('http');
+var io = require('socket.io');
 var mongoose = require('mongoose');
-var fs = require('fs');
 
 var global = 0;
 var server;
+var socket;
 var server_port = 8125;
 var msg_limiter = '~|~';
 var cmd_limiter = '~%~';
 var is_verbose = false;
-var policy_file = '';
 
 var LogrMessageModel;
 
@@ -29,9 +29,7 @@ function run() {
 		if(process.argv.length > 6)
 			is_verbose = Boolean(process.argv[6]);
 		
-		server.listen(server_port); 
-
-		console.log('# Server start @ port ' + server_port);
+	  setup_server();	
 	} else {
 		console.log('# Arguments mismatch.');
 		console.log('$ node app.js db_host db_port db_name [server_port verbose]');
@@ -83,68 +81,57 @@ function save_log(data, call_back) {
 	log.save(call_back);
 }
 
-// Server
-server = net.createServer(function (socket) {
-	console.log('################');
-	console.log('# Server Connect');
-	
-	socket.setEncoding('utf8');
-	
-	global++;
-	
-	socket.on('connect', function () {
-		socket.write('Proximity BBDO Socket Logr (' + global + ')\0');
-		
-		console.log('# New Client ' + socket.remoteAddress + ':' + socket.remotePort);
-	});
-	  
-	socket.on('data', function (data) {
-    if(data == '<policy-file-request/>\0') {
-      if(is_verbose)
-        console.log("# \tLog :: \n" + policy_file);
+function setup_server() {
+  console.log('# Server Connect (' + is_verbose + ')');
 
-      socket.write(policy_file + '\0');
-      socket.flush();
+  server = http.createServer(function(req, res) {
+    res.writeHead(200, {'Content-Type': 'text/html'}); 
+    res.end('<h1>Hello world</h1>'); 
+  });
+
+  server.listen(server_port); 
+  
+  console.log('# Socket server start @ port ' + server_port);
+
+  socket = io.listen(server, {transports: ['flashsocket']});
+  socket.on('connection', function(client) {		
+    global++;
+
+    client.send('Proximity BBDO Socket Logr (' + global + ')\0');
+    
+    console.log('# New Client ' + socket.remoteAddress + ':' + socket.remotePort);
+    
+    client.on('message', function(data) {
+      console.log(data);
+
+      var messages = data.split(msg_limiter);
       
-      return;
-    }
-		
-		var messages = data.split(msg_limiter);
-		
-    if(is_verbose && messages.length > 0)
-      console.log("# \tLog :: " + messages.length);
+      if(is_verbose && messages.length > 0)
+        console.log("# \tLog :: " + messages.length);
 
-		while(messages.length > 0) {
-			var msg = messages.shift();
-			
-			if(is_verbose)
-				console.log("# \tLog :: " + msg);
-			
-			if(msg.length > 0) {
-				save_log(msg, function(err) {
-					if(err) {
-						console.log('# Data Error ' + console.dir(err, false));
-						console.log('# Info \n ' + console.dir(socket, false));
+      while(messages.length > 0) {
+        var msg = messages.shift();
+        
+        if(is_verbose)
+          console.log("# \tLog :: " + msg);
+        
+        if(msg.length > 0) {
+          save_log(msg, function(err) {
+            if(err) {
+              console.log('# Data Error ' + console.dir(err, false));
+              console.log('# Info \n ' + console.dir(socket, false));
 
-						socket.write(console.dir(err, false) + '\0');
-					}
-				});
-			}
-		}
-	});
-	
-	socket.on('end', function () {
-		console.log('# Exit Client ' + socket.remoteAddress + ':' + socket.remotePort);
-		
-		socket.end();
-	});
-});
+              send.send(console.dir(err, false) + '\0');
+            }
+          });
+        }
+      }
+    });
 
-fs.readFile('./../crossdomain.xml', function (err, pol_file) {
-  if (err) 
-    throw err;
+    client.on('disconnect', function() {
+      console.log('# Exit Client ' + socket.remoteAddress + ':' + socket.remotePort);
+    });
+  });
+}
 
-  policy_file = pol_file;
-
-  run();
-});
+run(); 
