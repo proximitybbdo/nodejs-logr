@@ -1,17 +1,10 @@
-// requires & objects
+// requires & objects ------------------------------------------------------
 var express = require('express');
 var util = require('util');
 var http = require('http');
 var mongoose = require('mongoose');
 
-// config
-var db_user = "proximity";
-var db_pass = "ddt4ever";
-var db_host = "flame.mongohq.com";
-var db_port = "27029";
-var db_dbname = "logr";
-
-// variables
+// variables ---------------------------------------------------------------
 var port = 8124;
 var msg_limiter = '~|~';
 var cmd_limiter = '~%~';
@@ -31,24 +24,37 @@ Array.prototype.contains = function(obj) {
 }
 
 function run() {
+  if(process.argv.length === 7) {
+    setup_db(process.argv[2], process.argv[3], process.argv[4], process.argv[5], process.argv[6]);
 
-  // connect to db
-  setup_db(db_user, db_pass, db_host, db_port, db_dbname);
-  
-  // init app
-  init_app(port);
+    // init app
+    init_app(port);
+  } else {
+    console.log('# Arguments mismatch.');
+    console.log('$ node app.js db_host db_port db_user db_pass db_name');
 
-  // Optional Verbose
-  if(process.argv.length > 6)
-    is_verbose = Boolean(process.argv[6]);
+    process.exit(1);
+  }  
 }
 
 function init_app() {
   app = express.createServer();
 
-  // enable haml view engine
-  app.register('.haml', require('hamljs'));
-  app.set('view engine', 'haml');
+  // configure app
+  app.configure(function() {
+    // enable haml view engine
+    app.register('.haml', require('hamljs'));
+    app.set('view engine', 'haml');
+
+    // use bodyparser for form POST
+    app.use(express.bodyParser());
+
+    // static file provider
+     app.use(express.static(__dirname + '/public')); 
+  });
+
+ 
+
 
   //------------------------------------------------------------------------
   // routes
@@ -74,8 +80,40 @@ function init_app() {
 
   // get logs for a projects
   app.get('/:project', function(req, res) {
-    LogrMessageModel.find({project: req.params.project}, function(err, logs) {
-      res.render('project', {'title': 'Proximity Logr', 'logs': logs, 'project': req.params.project} );
+    // first parse the logr types
+    LogrMessageModel.find({project: req.params.project}, ['type'], function(err, logtypes) {
+      // filter out unique values
+      var unique_logtypes = new Array();
+
+      for (var i = 0; i < logtypes.length; i++) {
+        if(!unique_logtypes.contains(logtypes[i].type))
+          unique_logtypes.push(logtypes[i].type);
+      }
+      
+      // now get the actual log rows
+      LogrMessageModel.find({project: req.params.project}, function(err, logs) {
+        res.render('project', {'title': 'Proximity Logr', 'logs': logs, 'project': req.params.project, 'logtypes': unique_logtypes} );
+      });
+    });
+  });
+
+  // post for filter
+  app.post('/:project', function(req, res) {
+    console.dir(req.body);
+  
+    LogrMessageModel.find({project: req.params.project}, ['type'], function(err, logtypes) {
+      // filter out unique values
+      var unique_logtypes = new Array();
+
+      for (var i = 0; i < logtypes.length; i++) {
+        if(!unique_logtypes.contains(logtypes[i].type))
+          unique_logtypes.push(logtypes[i].type);
+      }
+      
+      // now get the actual log rows
+      LogrMessageModel.find({project: req.params.project, type: req.body.logtype}, function(err, logs) {
+        res.render('project', {'title': 'Proximity Logr', 'logs': logs, 'project': req.params.project, 'logtypes': unique_logtypes} );
+      });
     });
   });
 
@@ -87,7 +125,7 @@ function init_app() {
   util.log('################################');
 }
 
-function setup_db(user, pass, host, port, db_name) {
+function setup_db(host, port, user, pass, db_name) {
 	util.log('# database setup');
 	
 	var conn = 'mongodb://' + user + ':' + pass + '@' + host + ':' + port + '/' + db_name;
