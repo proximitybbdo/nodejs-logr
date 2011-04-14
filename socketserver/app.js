@@ -1,6 +1,5 @@
 var net = require('net');
 var mongoose = require('mongoose');
-var fs = require('fs');
 
 var global = 0;
 var server;
@@ -8,7 +7,6 @@ var server_port = 8125;
 var msg_limiter = '~|~';
 var cmd_limiter = '~%~';
 var is_verbose = false;
-var policy_file = '';
 
 var LogrMessageModel;
 
@@ -83,6 +81,16 @@ function save_log(data, call_back) {
 	log.save(call_back);
 }
 
+function policy() {
+  var xml = '<?xml version="1.0"?>\n<!DOCTYPE cross-domain-policy SYSTEM'
+          + ' "http://www.macromedia.com/xml/dtds/cross-domain-policy.dtd">\n<cross-domain-policy>\n';
+
+  xml += '<allow-access-from domain="*" to-ports="*"/>\n';
+  xml += '</cross-domain-policy>\n';
+  
+  return xml;
+}
+
 // Server
 server = net.createServer(function (socket) {
 	console.log('################');
@@ -91,25 +99,24 @@ server = net.createServer(function (socket) {
 	socket.setEncoding('utf8');
 	
 	global++;
-	
-	socket.on('connect', function () {
-		socket.write('Proximity BBDO Socket Logr (' + global + ')\0');
-		
-		console.log('# New Client ' + socket.remoteAddress + ':' + socket.remotePort);
-	});
-	  
-	socket.on('data', function (data) {
+
+  socket.write(policy() + '\0');
+
+  function on_policy_check(data) {
+    socket.removeListener('data', on_policy_check);
+    socket.on('data', on_data);
+
     if(data == '<policy-file-request/>\0') {
       if(is_verbose)
-        console.log("# \tLog :: \n" + policy_file);
+        console.log("# \tLog :: \n" + policy());
 
-      socket.write(policy_file + '\0');
-      socket.flush();
-      
-      return;
+      socket.write(policy());
     }
-		
-		var messages = data.split(msg_limiter);
+  }
+  
+  function on_data(data) {
+    console.log(data);
+    var messages = data.split(msg_limiter);
 		
     if(is_verbose && messages.length > 0)
       console.log("# \tLog :: " + messages.length);
@@ -131,7 +138,22 @@ server = net.createServer(function (socket) {
 				});
 			}
 		}
+	}
+  
+  socket.on('error', function(err){
+    if(socket && socket.end){
+      socket.end();
+      socket.destroy();
+    }
+  });
+	
+	socket.on('connect', function () {
+		socket.write('Proximity BBDO Socket Logr (' + global + ')\0');
+		
+		console.log('# New Client ' + socket.remoteAddress + ':' + socket.remotePort);
 	});
+	  
+	socket.on('data', on_policy_check);
 	
 	socket.on('end', function () {
 		console.log('# Exit Client ' + socket.remoteAddress + ':' + socket.remotePort);
@@ -140,11 +162,4 @@ server = net.createServer(function (socket) {
 	});
 });
 
-fs.readFile('./../crossdomain.xml', function (err, pol_file) {
-  if (err) 
-    throw err;
-
-  policy_file = pol_file;
-
-  run();
-});
+run();
