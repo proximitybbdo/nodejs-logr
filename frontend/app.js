@@ -13,6 +13,9 @@ var app;
 var LogrMessageModel;
 var db;
 
+var last_project = '';
+var filters_type = [];
+
 Array.prototype.contains = function(obj) {
   var i = this.length;
   while (i--) {
@@ -53,9 +56,6 @@ function init_app() {
      app.use(express.static(__dirname + '/public')); 
   });
 
- 
-
-
   //------------------------------------------------------------------------
   // routes
   //------------------------------------------------------------------------
@@ -63,58 +63,25 @@ function init_app() {
   // get unique project types
   app.get('/', function(req, res) {
 
-    var projects = new Array();
-
-    LogrMessageModel.find({}, ['project'], {'group': 'type'}, function(err, logs) {
-      for(var i = 0; i < logs.length; i++){
-        var log = logs[i];
-
-        if(!projects.contains(log.project))
-          projects.push(log.project);
-      }
-
-      res.render('index', {'title': 'Proximity Logr', 'projects': projects} );
-    });
 
   });
 
   // get logs for a projects
   app.get('/:project', function(req, res) {
     // first parse the logr types
-    LogrMessageModel.find({project: req.params.project}, ['type'], function(err, logtypes) {
-      // filter out unique values
-      var unique_logtypes = new Array();
-
-      for (var i = 0; i < logtypes.length; i++) {
-        if(!unique_logtypes.contains(logtypes[i].type))
-          unique_logtypes.push(logtypes[i].type);
-      }
-      
-      // now get the actual log rows
-      LogrMessageModel.find({project: req.params.project}, function(err, logs) {
-        res.render('project', {'title': 'Proximity Logr', 'logs': logs, 'project': req.params.project, 'logtypes': unique_logtypes} );
+    if(last_project != req.params.project) {
+      parse_filter_types(req.params.project, res, function(){
+        get_logs_by_project(req.params.project, res);
       });
-    });
+    } else {
+      get_logs_by_project(req.params.project, res);
+    }
   });
 
   // post for filter
   app.post('/:project', function(req, res) {
     console.dir(req.body);
-  
-    LogrMessageModel.find({project: req.params.project}, ['type'], function(err, logtypes) {
-      // filter out unique values
-      var unique_logtypes = new Array();
-
-      for (var i = 0; i < logtypes.length; i++) {
-        if(!unique_logtypes.contains(logtypes[i].type))
-          unique_logtypes.push(logtypes[i].type);
-      }
-      
-      // now get the actual log rows
-      LogrMessageModel.find({project: req.params.project, type: req.body.logtype}, function(err, logs) {
-        res.render('project', {'title': 'Proximity Logr', 'logs': logs, 'project': req.params.project, 'logtypes': unique_logtypes} );
-      });
-    });
+    get_logs_by_project_by_type(req.params.project, req.body.logtype, res);
   });
 
   app.listen(port);
@@ -151,6 +118,73 @@ function setup_db(host, port, user, pass, db_name) {
 	mongoose.model('LogrMessage', LogrMessage);
 
   LogrMessageModel = mongoose.model('LogrMessage');
+}
+
+function parse_dates(logs) {
+  for( var i in logs) 
+    logs[i].date = new Date(logs[i].date);
+}
+
+function parse_filter_types(project, res, callback) {
+  util.log("parse_filter_types");
+  last_project = project;
+
+  LogrMessageModel.find({project: project}, ['type'], function(err, logtypes) {
+    for (var i = 0; i < logtypes.length; i++) {
+      if(!filters_type.contains(logtypes[i].type))
+        filters_type.push(logtypes[i].type);
+    }
+
+    callback();
+  });
+}
+
+function get_projects(res) {
+  var projects = new Array();
+
+  LogrMessageModel.find({}, ['project'], {'group': 'type'}, function(err, logs) {
+    for(var i = 0; i < logs.length; i++){
+      var log = logs[i];
+
+      if(!projects.contains(log.project))
+    projects.push(log.project);
+    }
+
+    res.render('index', {'title': 'Proximity Logr', 'projects': projects} );
+  });
+}
+
+function get_logs_by_project(project, res, callback) {
+  util.log("get_logs_by_project");
+  LogrMessageModel.find({project: project}, function(err, logs) {
+    
+    parse_dates(logs);
+    
+    res.render(
+      'project', {
+        'title': 
+        'Proximity Logr', 
+        'logs': logs, 
+        'project': project, 
+        'logtypes': filters_type
+      });
+  });
+}
+
+function get_logs_by_project_by_type(project, logtype, res, callback) {
+  util.log("get_logs_by_project_by_type");
+  LogrMessageModel.find({project: project, type: logtype}, function(err, logs) {
+
+    parse_dates(logs);
+
+    res.render(
+      'project', {
+        'title': 'Proximity Logr',
+        'logs': logs, 
+        'project': project, 
+        'logtypes': filters_type
+      });
+  });
 }
 
 run();

@@ -1,21 +1,24 @@
 %div
   %a{href: '/'} back
-  %h2= 'Project: ' + project 
-  %form{method: 'post', 'action': '/' + project}
-    %h3 Filters
-    %select{'name': 'logtype'}
-      - each logtype in logtypes
-        %option{'value': logtype}= logtype
-    %input{'type': 'submit', 'name': 'submit', 'value': 'filter'}
+  %h2= 'Project: ' + project
+  %section{id: 'filters'}
+    %form{method: 'post', 'action': '/' + project, id: 'frmFilter'}
+      %select{name: 'logtype', id: 'logtype'}
+        %option -- pick
+        - each logtype in logtypes
+          %option{value: logtype}= logtype
+      %input{type: 'submit', name: 'filter', value: 'filter'}
   %table
     %tr
-      %th Row 
-      %th Type
-      %th Message
-      %th Date
+      %th{width: '20', class: 'centered'} Row 
+      %th{width: '50', class: 'centered'} Type
+      %th{width: '200'} Message
+      %th{width: '200'} Meta
+      %th{width: '70', class: 'centered'} Date
     - each log, row in logs
       %tr
-        %td= row+1
-        %td= log.type
-        %td= log.msg
-        %td= log.date
+        %td{class: 'centered'}= row+1
+        %td{class: 'centered'}= log.type
+        %td{class: ''}= log.msg
+        %td{class: ''}= log.meta
+        %td{class: 'centered'}= log.date.getDate() + '-' + log.date.getMonth() + '-' + log.date.getFullYear()
