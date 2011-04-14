@@ -62,8 +62,7 @@ function init_app() {
 
   // get unique project types
   app.get('/', function(req, res) {
-
-
+    get_projects(res);
   });
 
   // get logs for a projects
@@ -81,7 +80,16 @@ function init_app() {
   // post for filter
   app.post('/:project', function(req, res) {
     console.dir(req.body);
-    get_logs_by_project_by_type(req.params.project, req.body.logtype, res);
+    //get_logs_by_project_by_type(req.params.project, req.body.logtype, res);
+    
+    get_logs(res, [], {
+        project: req.params.project,
+        type: req.body.logtype
+      },{
+        'limit': 10,
+        'sort': parse_sort(req.body.sort)},
+      {'project': req.params.project}, {'project': req.params.project});
+
   });
 
   app.listen(port);
@@ -120,6 +128,12 @@ function setup_db(host, port, user, pass, db_name) {
   LogrMessageModel = mongoose.model('LogrMessage');
 }
 
+function parse_sort(sort) {
+    util.log(sort);
+    JSON.parse(sort);
+    return JSON.parse(sort);
+}
+
 function parse_dates(logs) {
   for( var i in logs) 
     logs[i].date = new Date(logs[i].date);
@@ -147,7 +161,7 @@ function get_projects(res) {
       var log = logs[i];
 
       if(!projects.contains(log.project))
-    projects.push(log.project);
+        projects.push(log.project);
     }
 
     res.render('index', {'title': 'Proximity Logr', 'projects': projects} );
@@ -156,7 +170,7 @@ function get_projects(res) {
 
 function get_logs_by_project(project, res, callback) {
   util.log("get_logs_by_project");
-  LogrMessageModel.find({project: project}, function(err, logs) {
+  LogrMessageModel.find({project: project}, [], {'limit': 10, 'skip': 1, 'sort' : {'date': -1}}, function(err, logs) {
     
     parse_dates(logs);
     
@@ -182,6 +196,22 @@ function get_logs_by_project_by_type(project, logtype, res, callback) {
         'title': 'Proximity Logr',
         'logs': logs, 
         'project': project, 
+        'logtypes': filters_type
+      });
+  });
+}
+
+function get_logs(res, fields, where_clause, ops, appdata, callback) {
+  LogrMessageModel.find(where_clause, fields, ops, function(err, logs) {
+    
+    parse_dates(logs);
+    
+    res.render(
+      'project', {
+        'title': 
+        'Proximity Logr', 
+        'logs': logs, 
+        'project': appdata.project,
         'logtypes': filters_type
       });
   });

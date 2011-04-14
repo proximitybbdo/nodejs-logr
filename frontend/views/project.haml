@@ -4,9 +4,9 @@
   %section{id: 'filters'}
     %form{method: 'post', 'action': '/' + project, id: 'frmFilter'}
       %select{name: 'logtype', id: 'logtype'}
-        %option -- pick
         - each logtype in logtypes
           %option{value: logtype}= logtype
+      %input{type: 'text', name: 'sort', placeholder: 'sort by'}
       %input{type: 'submit', name: 'filter', value: 'filter'}
   %table
     %tr
@@ -14,11 +14,11 @@
       %th{width: '50', class: 'centered'} Type
       %th{width: '200'} Message
       %th{width: '200'} Meta
-      %th{width: '70', class: 'centered'} Date
+      %th{width: '120', class: 'centered'} Date
     - each log, row in logs
       %tr
         %td{class: 'centered'}= row+1
         %td{class: 'centered'}= log.type
         %td{class: ''}= log.msg
         %td{class: ''}= log.meta
-        %td{class: 'centered'}= log.date.getDate() + '-' + log.date.getMonth() + '-' + log.date.getFullYear()
+        %td{class: 'centered'}= log.date.getDate() + '-' + log.date.getMonth() + '-' + log.date.getFullYear() + ' / ' + log.date.getHours() + ':' + log.date.getMinutes()
