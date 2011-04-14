@@ -129,9 +129,15 @@ function setup_db(host, port, user, pass, db_name) {
 }
 
 function parse_sort(sort) {
+  try {
     util.log(sort);
     JSON.parse(sort);
     return JSON.parse(sort);
+  } catch(err) {
+    console.log('ERR: error parsing JSON sort');
+    console.log(err);
+    return {};
+  }
 }
 
 function parse_dates(logs) {
