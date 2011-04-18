@@ -1,5 +1,7 @@
 var net = require('net');
 
+var Scoper = require('./utils/scoper').Scoper;
+
 var Server = function(port, data_model) {
   this._init(port, data_model);
 }
@@ -11,6 +13,8 @@ Server.prototype = {
   data_model: null,
   sock: null,
   socket_server: null, 
+  
+  _policy_listener: null, 
 
   _init: function(port, data_model) {
     console.log("S :: Construct");
@@ -20,25 +24,7 @@ Server.prototype = {
   }, 
 
   connect: function() {
-    var self = this;
-
-    this.socket_server = net.createServer(function(socket) {
-      if(self.is_verbose)
-        console.log("S :: Server Handler");
-
-      self.sock = socket;
-      self.sock.setEncoding('utf8');
-
-      console.log(this);
-      
-      self.sock.on('connect', self._on_connection_start);
-      self.sock.on('end', self._on_connection_end);
-      self.sock.on('error', self._on_error);
-      self.sock.on('data', self._on_policy_check);
-
-      self.send(self.policy());
-    });
-    
+    this.socket_server = net.createServer(Scoper.create(this, this._server_handler));
     this.socket_server.listen(this.port); 
 
 		console.log('S :: Server start @ port ' + this.port);
@@ -63,12 +49,14 @@ Server.prototype = {
     if(this.is_verbose)
       console.log("S :: Save Data" + data);
 
+    var self = this;
+
     this.data_model.save(data, function(err) {
 		  if(err) {
 			  console.log('# Data Error ' + console.dir(err, false));
-				console.log('# Info \n ' + console.dir(this.sock, false));
+				console.log('# Info \n ' + console.dir(self.sock, false));
 
-				this.send(console.dir(err, false));
+				self.send(console.dir(err, false));
 			}
 		});
   }, 
@@ -89,12 +77,12 @@ Server.prototype = {
     if(this.is_verbose)
       console.log("S :: On Policy Check");
 
-    this.sock.removeListener('data', this.on_policy_check);
-    this.sock.on('data', this.on_data);
+    this.sock.removeListener('data', this._policy_listener);
+    this.sock.on('data', Scoper.create(this, this._on_data));
 
     if(data == '<policy-file-request/>\0') {
       if(this.is_verbose)
-        console.log("S :: \tLog :: \n" + policy());
+        console.log("S :: \tLog :: \n" + this.policy());
 
       this.send(this.policy());
     }
@@ -134,12 +122,13 @@ Server.prototype = {
     this.sock = socket;
     this.sock.setEncoding('utf8');
 
-    console.log(Server);
-    
-    this.sock.on('connect', this._on_connection_start);
-    this.sock.on('end', this._on_connection_end);
-    this.sock.on('error', this._on_error);
-    this.sock.on('data', this._on_policy_check);
+    this.sock.on('connect', Scoper.create(this, this._on_connection_start));
+    this.sock.on('end', Scoper.create(this, this._on_connection_end));
+    this.sock.on('error', Scoper.create(this, this._on_error));
+
+    this._policy_listener = Scoper.create(this, this._on_policy_check);
+
+    this.sock.on('data', this._policy_listener);
 
     this.send(this.policy());
   }

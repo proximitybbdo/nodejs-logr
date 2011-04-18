@@ -21,7 +21,9 @@ if(process.argv.length > 4) {
   // Optional Verbose
   if(process.argv.length > 6)
     is_verbose = Boolean(process.argv[6]);
-  
+
+  model.connect();
+
   var server = new Server(server_port, model);
 
   server.connect();
