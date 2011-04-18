@@ -23,6 +23,8 @@ if(process.argv.length > 4) {
     is_verbose = Boolean(process.argv[6]);
   
   var server = new Server(server_port, model);
+
+  server.connect();
 } else {
   console.log('# Arguments mismatch.');
   console.log('$ node app.js db_host db_port db_name [server_port verbose]');
