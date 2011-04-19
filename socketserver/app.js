@@ -4,9 +4,6 @@ require.paths.unshift(__dirname);
 var Server = require('server').Server;
 var DataModel = require('data_model').DataModel;
 
-var is_verbose = false;
-var server_port = 8125;
-
 if(process.argv.length > 4) {
   var model = new DataModel(process.argv[2], process.argv[3], process.argv[4]);
 
