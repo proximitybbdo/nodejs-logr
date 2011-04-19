@@ -1,29 +1,70 @@
 @import url("boilerplate-reset.css");
 
 @import url("boilerplate-utils.css");
-
-html {
-  background-color: #dcdcdc;
-  background-repeat: no-repeat;
-  background-image: -moz-linear-gradient(100% 100% 90deg, #dcdcdc, #ffffff);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#dcdcdc));
-}
+/* COLORAMA */
+/* THE REAL STUFF */
 html body {
-  width: 640px;
+  width: 900px;
   margin: 0 auto;
   padding: 20px;
   text-shadow: 1px 1px 1px white;
   line-height: 1.6;
+  font-family: arial, sans-serif;
+  font-size: 14px;
+  background-color: #eee;
+  color: #444;
+  position: relative;
 }
 header {
-  padding: 10px;
+  position: absolute;
+  height: 30px;
+  width: auto;
+  padding: 2px 10px;
+  top: 0;
+  right: 0;
+  background-color: #333;
+  text-shadow: -1px -1px 1px black;
 }
 header h1 {
-  font-family: Monaco, Calibri, Consolas, courier, sans-serif;
-  font-size: 40px;
+  font-size: 14px;
+  color: #eee;
 }
 header h3 {
   font-size: 12px;
-  color: #666;
   display: none;
+}
+article {
+  /* filters */
+
+}
+article ul, article li {
+  margin: 0;
+  padding: 0;
+}
+article h2 {
+  font-size: 40px;
+  color: #ccc;
+}
+article a {
+  color: #00a0b0;
+}
+article a:visited {
+  color: #00a0b0;
+}
+article #filters {
+  width: auto;
+  margin: 20px 0;
+  padding: 10px;
+  background-color: #dce8eb;
+  border: 1px solid #BED2D9;
+  color: #666;
+}
+article table .centered {
+  text-align: center;
+}
+article table td {
+  padding: 5px;
+}
+article table tr {
+  border-bottom: 1px solid #ccc;
 }

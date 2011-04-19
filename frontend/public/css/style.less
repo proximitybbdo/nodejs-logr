@@ -1,0 +1,86 @@
+@import url("boilerplate-reset.css");
+
+@import url("boilerplate-utils.css");
+
+/* COLORAMA */
+@blue: #00A0B0;
+@greyblue: #DCE8EB;
+
+/* THE REAL STUFF */
+html {
+  body {
+    width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    text-shadow: 1px 1px 1px white;
+    line-height: 1.6;
+    font-family: arial, sans-serif;
+    font-size: 14px;
+    background-color: #eee;
+    color: #444;
+    position: relative;
+  }
+}
+header {
+  position: absolute;
+  height: 30px;
+  width: auto;
+  padding: 2px 10px; 
+  top: 0;
+  right: 0;
+
+  background-color: #333;
+  text-shadow: -1px -1px 1px black;
+
+  h1 {
+    font-size: 14px;
+    color: #eee;
+  }
+
+  h3 {
+    font-size: 12px;
+    display: none;
+  }
+}
+
+article {
+  
+  ul, li { margin: 0; padding: 0; }
+
+  h2 { 
+  	font-size: 40px;
+  	color: #ccc;
+  }
+
+  a {
+    color: @blue;
+    
+    &:visited { color: @blue; }
+  }
+
+  /* filters */
+  #filters {
+  	width: auto;
+  	margin: 20px 0;
+    padding: 10px;
+    background-color: @greyblue;
+    border: 1px solid #BED2D9;
+    color: #666;
+  }
+
+  table {
+
+
+  	.centered {
+      text-align: center;
+    }
+
+    td {
+      padding: 5px;
+    }
+
+    tr {
+      border-bottom: 1px solid #ccc;
+    }
+  }
+}
