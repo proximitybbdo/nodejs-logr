@@ -12,6 +12,7 @@ SocketIO.prototype = {
   server: null, 
   socket: null, 
   client: null, 
+  is_verbose: false, 
 
   _init: function(port) {
     console.log("SIO :: Construct");
@@ -32,22 +33,26 @@ SocketIO.prototype = {
     var $this = this;
     
     this.socket.on('connection', function(client){ 
-      console.log("SIO :: Client connected"); 
+      if(this.is_verbose)
+        console.log("SIO :: Client connected"); 
       
       $this.client = client;
 
       client.on('message', function(){
-        console.log("SIO :: Client message"); 
+        if(this.is_verbose)
+          console.log("SIO :: Client message"); 
       }); 
       
       client.on('disconnect', function(){
-        console.log("SIO :: Client disconnected"); 
+        if(this.is_verbose)
+          console.log("SIO :: Client disconnected"); 
       }); 
     });
   }, 
 
   push: function(data) {
-    console.log("SIO :: Push (" + this.client + "): " + data);
+    if(this.is_verbose)
+      console.log("SIO :: Push (" + this.client + "): " + data);
 
     if(this.client)
       this.client.send({raw: data});
