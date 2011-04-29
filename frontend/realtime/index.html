@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <title>Test</title>
+  
+  <style type="text/css">
+    body {
+      font-family: Arial;
+      font-size: 13px;
+      color: #222;
+    }
+
+    p {
+      margin: 2px 0px;
+      padding: 4px;
+      background: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <div id="tracer"></div>
+
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+  
+  <script src="http://127.0.0.1:8122/socket.io/socket.io.js"></script> 
+  <script> 
+    var socket = new io.Socket('127.0.0.1', { port : 8122 });
+
+    $(document).ready(function() {
+      socket.connect();
+    });
+    
+    socket.on('connect', function(){
+      console.log('connect');
+
+      // socket.send({func: 'listen', filter: '*'});
+    });
+
+    socket.on('message', function(data){
+      console.log('message :: ' + data.raw);
+
+      $("#tracer").prepend('<p>' + data.raw + '</p>')
+    }); 
+    
+    socket.on('disconnect', function(){
+      console.log('disconnect');
+    }); 
+  </script>
+</body>
+</html>
