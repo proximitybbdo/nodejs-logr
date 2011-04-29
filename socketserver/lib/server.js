@@ -13,6 +13,7 @@ Server.prototype = {
   data_model: null,
   sock: null,
   socket_server: null, 
+  listener_callback: null, 
   
   _policy_listener: null, 
 
@@ -43,7 +44,11 @@ Server.prototype = {
     xml += '</cross-domain-policy>\n';
     
     return xml;         
-  }, 
+  },
+
+  listen: function(callback) {
+    this.listener_callback = callback;
+  },
 
   _save_data: function(data) {
     if(this.is_verbose)
@@ -100,8 +105,11 @@ Server.prototype = {
 			if(this.is_verbose)
 				console.log("S :: \tLog :: " + msg);
 			
-			if(msg.length > 0)
+			if(msg.length > 0) {
 			  this._save_data(msg);
+
+        this.listener_callback(msg);
+			}
 		}   
   }, 
 
