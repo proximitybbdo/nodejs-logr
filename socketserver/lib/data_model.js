@@ -9,12 +9,21 @@ var DataModel = function(host, port, db_name) {
 }
 
 DataModel.prototype = {
+  model: null, 
+  conn: '', 
+  is_verbose: true,
+
+  verbose: function(value) {
+    this.is_verbose = value;
+  },
+
   connect: function() {
     this.conn = 'mongodb://' + this.host + ':' + this.port + '/' + this.db_name;
     
     mongoose.connect(this.conn);
     
-    console.log('# Connected to \'' + this.conn + '\'');
+    if(this.is_verbose)
+      console.log('# DataModel :: Connected to \'' + this.conn + '\'');
 
     var Schema = mongoose.Schema;
     var ObjectId = Schema.ObjectId;
@@ -34,23 +43,28 @@ DataModel.prototype = {
   },
 
   disconnect: function () {
-              
+    if(this.is_verbose)
+      console.log('# DataModel :: Disconnect');   
   }, 
 
   save: function(data, call_back) {
     var LogrMessageModel = mongoose.model('LogrMessage');
+    
+    try {
+      var obj = JSON.parse(data);
+      var log = new LogrMessageModel();
 
-    var obj = JSON.parse(data);
-    var log = new LogrMessageModel();
+      log.guid = obj.guid;
+      log.msg = obj.msg;
+      log.type = obj.type;
+      log.meta = obj.meta;
+      log.project = obj.project;
+      log.uid = obj.uid;
 
-    log.guid = obj.guid;
-    log.msg = obj.msg;
-    log.type = obj.type;
-    log.meta = obj.meta;
-    log.project = obj.project;
-    log.uid = obj.uid;
-
-    log.save(call_back); 
+      log.save(call_back);
+    } catch(err) {
+      console.log('# DataModel :: Save Error: ' + err);
+    }
   }
 }
 

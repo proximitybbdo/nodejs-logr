@@ -15,9 +15,13 @@ SocketIO.prototype = {
   is_verbose: false, 
 
   _init: function(port) {
-    console.log("SIO :: Construct");
+    console.log("# SIO :: Construct");
 
     this.port = port;
+  }, 
+
+  verbose: function(value) {
+    this.is_verbose = value;         
   }, 
 
   start: function() {
@@ -39,7 +43,7 @@ SocketIO.prototype = {
 
   push: function(data) {
     if(this.is_verbose)
-      console.log("SIO :: Push :: " + data);
+      console.log("# SIO :: Push :: " + data);
 
     if(this.clients.length > 0) {
       var listening_clients = this._get_listening_clients();
@@ -54,17 +58,17 @@ SocketIO.prototype = {
     var new_client = client;
 
     if(this.is_verbose)
-      console.log("SIO :: Client connected (" + new_client.sessionId + ")"); 
+      console.log("# SIO :: Client connected (" + new_client.sessionId + ")"); 
      
     this.clients.push({conn: new_client, listening: false, filter: ''});
 
     new_client.on('message', function(data) {
       if($this.is_verbose)
-        console.log("SIO :: Client message (" + this.sessionId + ") -> (" + data + ")");
+        console.log("# SIO :: Client message (" + this.sessionId + ") -> (" + data + ")");
 
       if(data.func == 'listen' && data.filter.length > 0) {
         if($this.is_verbose)
-          console.log("SIO :: Client listening (" + this.sessionId + ")");
+          console.log("# SIO :: Client listening (" + this.sessionId + ")");
 
         $this._get_client(this.sessionId).listening = true;
         $this._get_client(this.sessionId).filter = data.filter;
@@ -73,7 +77,7 @@ SocketIO.prototype = {
       
     new_client.on('disconnect', function() {
       if($this.is_verbose)
-        console.log("SIO :: Client disconnected (" + this.sessionId + ")"); 
+        console.log("# SIO :: Client disconnected (" + this.sessionId + ")"); 
       
       $this._remove_client(this.sessionId);
     }); 
@@ -83,8 +87,8 @@ SocketIO.prototype = {
     return this.clients.filter(function(el, index, array) {
       if(el.listening && el.filter.length > 0)
         return true;
-      else
-        return false;
+      
+      return false;
     });                      
   },
 

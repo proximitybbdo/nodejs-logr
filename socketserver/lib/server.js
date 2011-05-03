@@ -18,7 +18,7 @@ Server.prototype = {
   _policy_listener: null, 
 
   _init: function(port, data_model) {
-    console.log("S :: Construct");
+    console.log("# Server :: Construct");
 
     this.port = port;
     this.data_model = data_model;
@@ -28,7 +28,11 @@ Server.prototype = {
     this.socket_server = net.createServer(Scoper.create(this, this._server_handler));
     this.socket_server.listen(this.port); 
 
-		console.log('S :: Server start @ port ' + this.port);
+		console.log('# Server :: Server start @ port ' + this.port);
+  },
+
+  verbose: function(value) {
+    this.is_verbose = value;
   },
 
   send: function(msg) {
@@ -52,14 +56,14 @@ Server.prototype = {
 
   _save_data: function(data) {
     if(this.is_verbose)
-      console.log("S :: Save Data" + data);
+      console.log("# Server :: Save Data" + data);
 
     var self = this;
 
     this.data_model.save(data, function(err) {
 		  if(err) {
-			  console.log('# Data Error ' + console.dir(err, false));
-				console.log('# Info \n ' + console.dir(self.sock, false));
+			  console.log('# Server :: Data Error ' + console.dir(err, false));
+				console.log('# Server :: Info \n ' + console.dir(self.sock, false));
 
 				self.send(console.dir(err, false));
 			}
@@ -68,26 +72,26 @@ Server.prototype = {
 
   _on_connection_start: function() {
     if(this.is_verbose)
-      console.log("S :: On Connection Start");
+      console.log("# Server :: On Connection Start");
   }, 
 
   _on_connection_end: function() {
     if(this.is_verbose)
-      console.log("S :: On Connection End");
+      console.log("# Server :: On Connection End");
 
     this.sock.end();                 
   },
 
   _on_policy_check: function(data) {
     if(this.is_verbose)
-      console.log("S :: On Policy Check");
+      console.log("# Server :: On Policy Check");
 
     this.sock.removeListener('data', this._policy_listener);
     this.sock.on('data', Scoper.create(this, this._on_data));
 
     if(data == '<policy-file-request/>\0') {
       if(this.is_verbose)
-        console.log("S :: \tLog :: \n" + this.policy());
+        console.log("# Server :: \tLog :: \n" + this.policy());
 
       this.send(this.policy());
     }
@@ -97,16 +101,16 @@ Server.prototype = {
     var messages = data.split(this.msg_limiter);
 		
     if(this.is_verbose && messages.length > 0)
-      console.log("S :: \tLog :: " + messages.length);
-
+      console.log("# Server :: \tLog :: " + messages.length);
+		
 		while(messages.length > 0) {
 			var msg = messages.shift();
 			
 			if(this.is_verbose)
-				console.log("S :: \tLog :: " + msg);
+				console.log("# Server :: \tLog :: " + msg);
 			
 			if(msg.length > 0) {
-			  this._save_data(msg);
+        this._save_data(msg);
 
         this.listener_callback(msg);
 			}
@@ -116,7 +120,7 @@ Server.prototype = {
   _on_error: function(err) {
     if(this.sock && this.sock.end) {
       if(this.is_verbose)
-        console.log("S :: On Error");
+        console.log("# Server :: On Error");
 
       this.sock.end();
       this.sock.destroy();
@@ -125,7 +129,7 @@ Server.prototype = {
 
   _server_handler: function(socket) {
     if(this.is_verbose)
-      console.log("S :: Server Handler");
+      console.log("# Server :: Server Handler");
 
     this.sock = socket;
     this.sock.setEncoding('utf8');
