@@ -1,0 +1,17 @@
+{
+  "author": "Jeroen Bourgois <jeroenbourgois@gmail.com>",
+  "name": "logr-frontend",
+  "description": "Logr FrontEnd",
+  "version": "0.0.1",
+  "homepage": "http://proximity.bbdo.be",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/proximitybbdo/nodejs-logr.git"
+  },
+  "main": "./app.js",
+  "engines": {
+    "node": "0.4.7"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
