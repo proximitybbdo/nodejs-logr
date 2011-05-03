@@ -19,15 +19,8 @@ window.LogView = Backbone.View.extend({
   render: function() {
     this.el = ich.log(this.model.toJSON());
     return this;
-  },
-
-  remove: function() {
-    $(this.el).remove();
-  },
-
-  clear: function() {
-    this.model.clear();
   }
+
 });
 
 window.PingPongAppView = Backbone.View.extend({
