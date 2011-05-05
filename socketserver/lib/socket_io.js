@@ -45,11 +45,34 @@ SocketIO.prototype = {
     if(this.is_verbose)
       console.log("# SIO :: Push :: " + data);
 
-    if(this.clients.length > 0) {
+    try {
+      data = JSON.parse(data);
+    } catch(err) {
+      console.log('# SIO :: Push Parse :: ' + err);
+
+      data = "";
+    }
+
+    if(this.clients.length > 0 && typeof data == "object") {
       var listening_clients = this._get_listening_clients();
       
-      for(var i in listening_clients)
-        listening_clients[i].conn.send({raw: data});
+      for(var i in listening_clients) {
+        // filters = [{prop: 'propname', filter: 'regexp'}, ...]
+        
+        var client = listening_clients[i];
+        var is_asked_for = true;
+
+        for(var j in client.filter) {
+          var filter = client.filter[j];
+        
+          if( !(filter.prop in data) || // prop exists?
+              !new RegExp(filter.filter).test(data[filter.prop])) // check regexp
+            is_asked_for = false; 
+        }
+        
+        if(is_asked_for)
+          client.conn.send({raw: data});
+      }
     }
   },
 
@@ -60,7 +83,7 @@ SocketIO.prototype = {
     if(this.is_verbose)
       console.log("# SIO :: Client connected (" + new_client.sessionId + ")"); 
      
-    this.clients.push({conn: new_client, listening: false, filter: ''});
+    this.clients.push({conn: new_client, listening: false, filter: []});
 
     new_client.on('message', function(data) {
       if($this.is_verbose)
@@ -72,6 +95,12 @@ SocketIO.prototype = {
 
         $this._get_client(this.sessionId).listening = true;
         $this._get_client(this.sessionId).filter = data.filter;
+      } else if(data.func == 'shutup') {
+        if($this.is_verbose)
+          console.log("# SIO :: Client wants me to shut up (" + this.sessionId + ")");
+
+        $this._get_client(this.sessionId).listening = false;
+        $this._get_client(this.sessionId).filter = [];
       }
     }); 
       

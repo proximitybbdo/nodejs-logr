@@ -32,20 +32,20 @@ if(process.argv.length > 5) {
 if(process.argv.length > 6)
   is_verbose = Boolean(process.argv[6]);
 
-// Server
-server = new Server(server_port, model);
-server.verbose(is_verbose);
-server.connect();
-
 // Model
 model = new DataModel(process.argv[2], process.argv[3], process.argv[4]);
 model.verbose(is_verbose);
 model.connect();
 
+// Server
+server = new Server(server_port, model);
+server.verbose(is_verbose);
+server.connect();
+
 // Socket.IO server
 if(process.argv.length > 7 && Boolean(process.argv[7])) {
   sio = new SocketIO(server_port + 11);
-
+  sio.verbose(is_verbose);
   sio.start();
   
   server.listen(function(data) {
