@@ -66,7 +66,7 @@ SocketIO.prototype = {
           var filter = client.filter[j];
         
           if( !(filter.prop in data) || // prop exists?
-              !new RegExp(filter.filter).test(data[filter.prop])) // check regexp
+              !(new RegExp(filter.filter).test(data[filter.prop]))) // check regexp
             is_asked_for = false; 
         }
         

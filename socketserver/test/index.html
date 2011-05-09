@@ -35,7 +35,7 @@
     socket.on('connect', function(){
       console.log('connect');
 
-      // socket.send({func: 'listen', filter: '*'});
+      // socket.send({func: 'listen', filter: [{prop: 'META', filter: ''}]});
     });
 
     socket.on('message', function(data){
