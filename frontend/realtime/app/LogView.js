@@ -47,18 +47,26 @@ window.PingPongAppModel = Backbone.Model.extend({
 });
 
 window.PingPongAppController = Backbone.Controller.extend({
-  initialize: function(append_at) {
+  initialize: function(params) {
     console.log('App ready');
 
     _.bindAll(this, 'addLog');
+    _.bindAll(this, 'start');
 
     this.model = new PingPongAppModel();
     this.view = new PingPongAppView({model: this.model});
+    this.socket = params[1];
 
-    $(append_at).append(this.view.render().el);
+    $(params[0]).append(this.view.render().el);
+    
+    $('a#start').bind("click", this.start);
   },
 
   addLog: function(log) {
     this.model.logs.add(new Log(log));
+  },
+
+  start: function() {
+     this.socket.send({func: 'listen', filter: [ { prop: 'type', filter: $('#guid').text()  } ]  });
   }
 });
