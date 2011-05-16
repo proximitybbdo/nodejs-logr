@@ -37,6 +37,10 @@ window.PingPongAppView = Backbone.View.extend({
   render: function() {
     this.el = ich.app(this.model.toJSON());
     return this;
+  },
+
+  clear: function() {
+    $('#logs').children().remove();
   }
 });
 
@@ -52,14 +56,22 @@ window.PingPongAppController = Backbone.Controller.extend({
 
     _.bindAll(this, 'addLog');
     _.bindAll(this, 'start');
+    _.bindAll(this, 'filter');
 
     this.model = new PingPongAppModel();
     this.view = new PingPongAppView({model: this.model});
     this.socket = params[1];
+    this.started = false;
 
     $(params[0]).append(this.view.render().el);
     
-    $('a#start').bind("click", this.start);
+    // UI elements and bindings
+    this.guidfilter = $('#guid-filter');
+    this.filters = $('#filters');
+    this.output = $('#output');
+    
+    $('#start').bind("click", this.start);
+    $('#apply-filter').bind("click", this.filter);
   },
 
   addLog: function(log) {
@@ -67,6 +79,28 @@ window.PingPongAppController = Backbone.Controller.extend({
   },
 
   start: function() {
-     this.socket.send({func: 'listen', filter: [ { prop: 'type', filter: $('#guid').text()  } ]  });
+    this.started = true;
+    this.guidfilter.fadeOut();
+    this.filters.slideDown();
+    this.output.fadeIn();
+    
+    this.socket.send({func: 'listen', filter: [ { prop: 'guid', filter: $('#guid').val()  } ]  });
+  },
+
+  reset: function() {
+    this.view.clear();
+  },
+
+  filter: function() {
+    // clear current view
+    this.view.clear();
+
+    // fill with filter
+    try {
+      var filter = JSON.parse($('#fltr').val());
+      this.socket.send( { func: 'listen', filter: [ filter ] } );
+    } catch (err) {
+      alert('Woops, wrong filter!');
+    }
   }
 });

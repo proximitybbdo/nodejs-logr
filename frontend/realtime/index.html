@@ -35,12 +35,21 @@
   </script>
 
   <script id="app" type="text/html">
-    <h1>Guid to monitor</h1>
+    <section id="filters">
+      <h3>filter</h3>
+      <input type="text" name="fltr" id="fltr" placeholder='{ "prop": "type", "filter": "MESSAGE"  }' /> 
+      <a id="apply-filter" class="button" href="#">Apply</a>
+    </section>
 
-    <input type="text" name="guid" id="guid" />
-    <a id="start" href="#">Log</a>
+    <section id="guid-filter" class="box">
+      <h2>Sniff guid</h2>
+      <input type="text" name="guid" id="guid" />
+      <a id="start" class="button" href="#">Log</a>
+    </section>
 
-    <ul id="logs"></ul> 
+    <section id="output" class="box">
+      <ul id="logs"></ul> 
+    </section>
   </script>
   
 </body>
