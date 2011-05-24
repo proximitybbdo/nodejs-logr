@@ -25,13 +25,21 @@
 
   <!-- templates -->
   <script id="log" type="text/html">
-    <li>
-      <span class="message">{{ msg }}</span>
-      <span class="type">{{ type }}</span>
-      <span class="meta">{{ meta }}</span>
-      <span class="guid">{{ guid }}</span>
-      <span class="project">{{ project }}</span>
-    </li>
+    <tr>
+      <td class="message">{{ msg }}</td>
+      <td class="type">{{ type }}</td>
+      <td class="meta">{{ meta }}</td>
+      <td class="guid">{{ guid }}</td>
+      <td class="project">{{ project }}</td>
+    </tr>
+  </script>
+
+  <script id="apperror" type="text/html">
+    <section id="app-error">
+      <h2>Ouch :( no socket = no fun!</h2>
+      <p>I could not connect to the precious socket. Reason ?</p>
+      <p><strong>{{ errormsg }}</strong></p>
+    </section>
   </script>
 
   <script id="app" type="text/html">
@@ -48,7 +56,7 @@
     </section>
 
     <section id="output" class="box">
-      <ul id="logs"></ul> 
+      <table id="logs"></table> 
     </section>
   </script>
   
